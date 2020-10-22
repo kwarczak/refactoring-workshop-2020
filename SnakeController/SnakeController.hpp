@@ -53,6 +53,8 @@ private:
     bool checkForLost(const Segment&);
     void adjustSnake();
     void displayNewHead(const Segment&);
+    void eatFood(const Segment&);
+    void move(const Segment&);
 };
 
 } // namespace Snake

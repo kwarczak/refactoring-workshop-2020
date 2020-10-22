@@ -106,35 +106,51 @@ void Controller::adjustSnake()
             m_segments.end());
 }
 
+void Controller::eatFood(const Segment& newHead)
+{
+    m_scorePort.send(std::make_unique<EventT<ScoreInd>>());
+    m_foodPort.send(std::make_unique<EventT<FoodReq>>());
+}
+
+void Controller::move(const Segment& newHead)
+{
+    for (auto &segment : m_segments) 
+    {
+        if (not --segment.ttl) 
+        {
+            DisplayInd l_evt;
+            l_evt.x = segment.x;
+            l_evt.y = segment.y;
+            l_evt.value = Cell_FREE;
+
+            m_displayPort.send(std::make_unique<EventT<DisplayInd>>(l_evt));
+        }
+    }
+}
+
 void Controller::receive(std::unique_ptr<Event> e)
 {
-    try {
+    try 
+    {
         auto const& timerEvent = *dynamic_cast<EventT<TimeoutInd> const&>(*e);
 
         Segment newHead = setNewHead();  
         if (checkForLost(newHead)) return;
 
-        if (std::make_pair(newHead.x, newHead.y) == m_foodPosition) {
-            m_scorePort.send(std::make_unique<EventT<ScoreInd>>());
-            m_foodPort.send(std::make_unique<EventT<FoodReq>>());
+        if (std::make_pair(newHead.x, newHead.y) == m_foodPosition) 
+        {
+            eatFood(newHead);
         } else if (newHead.x < 0 or newHead.y < 0 or
                     newHead.x >= m_mapDimension.first or
-                    newHead.y >= m_mapDimension.second) {
+                    newHead.y >= m_mapDimension.second) 
+                    {
             m_scorePort.send(std::make_unique<EventT<LooseInd>>());
             return;
-        } else {
-            for (auto &segment : m_segments) {
-                if (not --segment.ttl) {
-                    DisplayInd l_evt;
-                    l_evt.x = segment.x;
-                    l_evt.y = segment.y;
-                    l_evt.value = Cell_FREE;
-
-                    m_displayPort.send(std::make_unique<EventT<DisplayInd>>(l_evt));
-                }
-            }
+            } 
+        else {
+            move(newHead);
         }
-
+        
         m_segments.push_front(newHead);
         displayNewHead(newHead);
         adjustSnake();      
