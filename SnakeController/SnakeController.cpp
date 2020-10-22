@@ -86,6 +86,16 @@ bool Controller::checkForLost(const Controller::Segment& newHead)
         return false;
 }
 
+void Controller::displayNewHead(const Segment& newHead)
+{
+        DisplayInd placeNewHead;
+        placeNewHead.x = newHead.x;
+        placeNewHead.y = newHead.y;
+        placeNewHead.value = Cell_SNAKE;
+
+        m_displayPort.send(std::make_unique<EventT<DisplayInd>>(placeNewHead));
+}
+
 void Controller::adjustSnake()
 {
     m_segments.erase(
@@ -126,12 +136,7 @@ void Controller::receive(std::unique_ptr<Event> e)
         }
 
         m_segments.push_front(newHead);
-        DisplayInd placeNewHead;
-        placeNewHead.x = newHead.x;
-        placeNewHead.y = newHead.y;
-        placeNewHead.value = Cell_SNAKE;
-
-        m_displayPort.send(std::make_unique<EventT<DisplayInd>>(placeNewHead));
+        displayNewHead(newHead);
         adjustSnake();      
         
     } catch (std::bad_cast&) {
