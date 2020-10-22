@@ -75,6 +75,17 @@ Controller::Segment Controller::setNewHead()
     return newHead;
 }
 
+bool Controller::checkForLost(const Controller::Segment& newHead)
+{
+        for (auto segment : m_segments) {
+            if (segment.x == newHead.x and segment.y == newHead.y) {
+                m_scorePort.send(std::make_unique<EventT<LooseInd>>());
+                return true;
+            }
+        }
+        return false;
+}
+
 void Controller::receive(std::unique_ptr<Event> e)
 {
     try {
@@ -82,15 +93,7 @@ void Controller::receive(std::unique_ptr<Event> e)
 
         Segment newHead = setNewHead();
   
-        bool lost = false;
-
-        for (auto segment : m_segments) {
-            if (segment.x == newHead.x and segment.y == newHead.y) {
-                m_scorePort.send(std::make_unique<EventT<LooseInd>>());
-                lost = true;
-                break;
-            }
-        }
+        bool lost = checkForLost(newHead);
 
         if (not lost) {
             if (std::make_pair(newHead.x, newHead.y) == m_foodPosition) {

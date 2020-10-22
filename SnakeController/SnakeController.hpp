@@ -50,6 +50,7 @@ private:
     std::list<Segment> m_segments;
 
     Segment setNewHead();
+    bool checkForLost(const Segment&);
 };
 
 } // namespace Snake
