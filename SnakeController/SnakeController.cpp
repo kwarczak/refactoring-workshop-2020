@@ -86,6 +86,16 @@ bool Controller::checkForLost(const Controller::Segment& newHead)
         return false;
 }
 
+void Controller::adjustSnake()
+{
+    m_segments.erase(
+        std::remove_if(
+                m_segments.begin(),
+                m_segments.end(),
+                [](auto const& segment){ return not (segment.ttl > 0); }),
+            m_segments.end());
+}
+
 void Controller::receive(std::unique_ptr<Event> e)
 {
     try {
@@ -93,7 +103,7 @@ void Controller::receive(std::unique_ptr<Event> e)
 
         Segment newHead = setNewHead();  
         if (checkForLost(newHead)) return;
-             
+
         if (std::make_pair(newHead.x, newHead.y) == m_foodPosition) {
             m_scorePort.send(std::make_unique<EventT<ScoreInd>>());
             m_foodPort.send(std::make_unique<EventT<FoodReq>>());
@@ -122,13 +132,7 @@ void Controller::receive(std::unique_ptr<Event> e)
         placeNewHead.value = Cell_SNAKE;
 
         m_displayPort.send(std::make_unique<EventT<DisplayInd>>(placeNewHead));
-
-        m_segments.erase(
-            std::remove_if(
-                m_segments.begin(),
-                m_segments.end(),
-                [](auto const& segment){ return not (segment.ttl > 0); }),
-            m_segments.end());
+        adjustSnake();      
         
     } catch (std::bad_cast&) {
         try {

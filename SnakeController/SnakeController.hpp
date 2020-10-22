@@ -51,6 +51,7 @@ private:
 
     Segment setNewHead();
     bool checkForLost(const Segment&);
+    void adjustSnake();
 };
 
 } // namespace Snake
