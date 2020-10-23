@@ -5,6 +5,7 @@
 
 #include "EventT.hpp"
 #include "IPort.hpp"
+#include "DisplayHelper.hpp"
 
 namespace Snake
 {
@@ -87,12 +88,7 @@ void Controller::sendPlaceNewFood(int x, int y)
 
 void Controller::sendClearOldFood()
 {
-    DisplayInd clearOldFood;
-    clearOldFood.x = m_foodPosition.first;
-    clearOldFood.y = m_foodPosition.second;
-    clearOldFood.value = Cell_FREE;
-
-    m_displayPort.send(std::make_unique<EventT<DisplayInd>>(clearOldFood));
+    m_displayPort.send(std::make_unique<EventT<DisplayInd>>(createDisplay(m_foodPosition.first, m_foodPosition.second, Cell_FREE)));
 }
 
 namespace
@@ -189,17 +185,6 @@ void Controller::handleDirectionInd(std::unique_ptr<Event> e)
     }
 }
 
-void Controller::updateFoodPosition(int x, int y, std::function<void()> clearPolicy)
-{
-    if (isSegmentAtPosition(x, y) || isPositionOutsideMap(x,y)) {
-        m_foodPort.send(std::make_unique<EventT<FoodReq>>());
-        return;
-    }
-
-    clearPolicy();
-    sendPlaceNewFood(x, y);
-}
-
 void Controller::handleFoodInd(std::unique_ptr<Event> e)
 {
     auto receivedFood = payload<FoodInd>(*e);
@@ -243,4 +228,5 @@ void Controller::receive(std::unique_ptr<Event> e)
     }
 }
 
-} // namespace Snake
+}// namespace Snake
+
