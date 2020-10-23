@@ -143,12 +143,7 @@ void Controller::addHeadSegment(Segment const& newHead)
 {
     m_segments.push_front(newHead);
 
-    DisplayInd placeNewHead;
-    placeNewHead.x = newHead.x;
-    placeNewHead.y = newHead.y;
-    placeNewHead.value = Cell_SNAKE;
-
-    m_displayPort.send(std::make_unique<EventT<DisplayInd>>(placeNewHead));
+    m_displayPort.send(std::make_unique<EventT<DisplayInd>>(createDisplay(newHead.x, newHead.y, Cell_SNAKE)));
 }
 
 void Controller::removeTailSegmentIfNotScored(Segment const& newHead)
